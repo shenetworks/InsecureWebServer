@@ -78,7 +78,7 @@ public class SimpleWebServer {
         
         // If there was no filename specified by the client, serve the 'index.html' file. //
         if (pathname.equals(""))
-            pathname = "C:\\Users\\Serena\\Desktop\\test\\index.html";
+            pathname = "index.html";
 
         // Try to open file specified by pathname. //
         try {
