@@ -1,7 +1,7 @@
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import sun.misc.BASE64Decoder;
+import java.util.Base64;
 
 public class BasicAuthWebServer {
     /*run the http server on this TCP port. */
@@ -60,8 +60,8 @@ public class BasicAuthWebServer {
             if ((c != null) && (MiniPasswordManager.checkPassword(c.getUsername(), c.getPassword()))) {
                 serveFile (osw,pathname);        
             } else {
-                ows.write ("HTTP/1.0 401 Unauthorized");
-                ows.write ("WWW-Authenticate: Basic realm=BasicAuthWebServer");
+                osw.write ("HTTP/1.0 401 Unauthorized");
+                osw.write ("WWW-Authenticate: Basic realm=BasicAuthWebServer");
             }
         } 
         else if (command.equals("PUT")) {
@@ -95,7 +95,7 @@ public class BasicAuthWebServer {
     public void serveFile (OutputStreamWriter osw, String pathname) throws Exception {
         FileReader fr = null;
         int c = -1;
-        int sentBytes = 0; 
+        int sentBytes = 0;
 
         // Remove the initial slash at the beginning of the pathname in the request //
         if (pathname.charAt(0) == '/')
@@ -118,16 +118,15 @@ public class BasicAuthWebServer {
 
         // if the requested file can be successfully opened and read, then return an OK response code and sent the contents of the file. //
         osw.write ("HTTP/1.0 200 OK\n\n");
-        while ( (c != -1) && (sentBytes <MAX_DOWNLOAD_LIMIT) ){
-            ows.write (c);
+        while ( (c != -1) && (sentBytes < 1000000) ){
+            osw.write (c);
             sentBytes++;
             c = fr.read();
-            if (totalReadSize > MAX_DOWNLOAD_SIZE) {
+            if (sentBytes > 1000000) {
+                logEntry("403Error.txt", "File Exceeds Size Limit");
                 throw new Exception("403 Forbidden");
-                logEntry("403Error.txt",command);
             }
         }
-        osw.write (sb.toString());
     }
     public void storeFile(BufferedReader br,
             OutputStreamWriter osw,
@@ -179,7 +178,7 @@ class Credentials {
     private String dUsername;
     private String dPassword;
     public Credentials(String authString) throws Exception {
-	    authString = new String((new sun.misc.BASE64Decoder().decodeBuffer(authString)));
+	    authString = new String((Base64.getDecoder().decode(authString)));
 	    StringTokenizer st = new StringTokenizer(authString, ":");
 	    dUsername = st.nextToken();
 	    dPassword = st.nextToken();
